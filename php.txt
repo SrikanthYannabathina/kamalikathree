@@ -1,0 +1,70 @@
+<?php
+include 'db.php';
+
+// Add secret
+if (isset($_POST['add_secret'])) {
+    $title = $_POST['title'];
+    $secret_text = $_POST['secret_text'];
+
+    $stmt = $conn->prepare("INSERT INTO secrets (title, secret_text) VALUES (?, ?)");
+    $stmt->bind_param("ss", $title, $secret_text);
+    $stmt->execute();
+}
+
+// Delete secret
+if (isset($_GET['delete_id'])) {
+    $id = $_GET['delete_id'];
+    $conn->query("DELETE FROM secrets WHERE id = $id");
+}
+
+// Fetch secrets
+$result = $conn->query("SELECT * FROM secrets");
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secrets Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 10px; text-align: left; }
+        form { margin-bottom: 20px; }
+        input, textarea, button { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Secrets Manager</h1>
+
+    <!-- Form to Add Secret -->
+    <form method="POST">
+        <input type="text" name="title" placeholder="Title" required>
+        <textarea name="secret_text" placeholder="Your Secret" required></textarea>
+        <button type="submit" name="add_secret">Add Secret</button>
+    </form>
+
+    <!-- Display Secrets -->
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Secret</th>
+            <th>Created At</th>
+            <th>Action</th>
+        </tr>
+        <?php while ($row = $result->fetch_assoc()): ?>
+        <tr>
+            <td><?php echo $row['id']; ?></td>
+            <td><?php echo $row['title']; ?></td>
+            <td><?php echo $row['secret_text']; ?></td>
+            <td><?php echo $row['created_at']; ?></td>
+            <td>
+                <a href="?delete_id=<?php echo $row['id']; ?>">Delete</a>
+            </td>
+        </tr>
+        <?php endwhile; ?>
+    </table>
+</body>
+</html>
